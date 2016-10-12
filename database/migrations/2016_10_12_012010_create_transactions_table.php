@@ -19,6 +19,7 @@ class CreateTransactionsTable extends Migration
             $t->string('shipping_id')->nullable();
             $t->unsignedBigInteger('customer_id');
             $t->string('payment_url')->nullable();
+            $t->boolean('submitted')->default(false);
 
             $t->foreign('customer_id')->references('id')->on('customers')->onDelete('cascade')->onUpdate('cascade');
             $t->foreign('coupon_id')->references('id')->on('coupons')->onDelete('cascade')->onUpdate('cascade');

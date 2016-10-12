@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property integer id
  * @property string payment_url
  * @property string shipping_id
+ * @property boolean submitted
  */
 class Transaction extends Model
 {
@@ -20,4 +21,15 @@ class Transaction extends Model
     public function coupon(){
         return $this->belongsTo(Coupon::class,'coupon_id','id');
     }
+
+    public function customer()
+    {
+        return $this->belongsTo(Customer::class,'customer_id','id');
+    }
+
+    public function isAlreadySubmitted()
+    {
+        return $this->submitted;
+    }
+
 }

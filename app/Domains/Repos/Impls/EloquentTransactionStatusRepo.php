@@ -30,4 +30,9 @@ class EloquentTransactionStatusRepo implements TransactionStatusRepo
         }
         return $transactionStatus;
     }
+
+    function findAllByTransactionOrderByMostRecent(Transaction $transaction)
+    {
+        return $transaction->transactionStatuses()->orderBy('id','desc')->get();
+    }
 }

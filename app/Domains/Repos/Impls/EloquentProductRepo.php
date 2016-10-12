@@ -18,4 +18,13 @@ class EloquentProductRepo implements ProductRepo
     {
         return Product::where('id','=',$product->id)->where('quantity','>=',$gte_amount)->decrement('quanity',$decrease_amount);
     }
+
+    /**
+     * @param $id
+     * @return Product
+     */
+    public function findById($id)
+    {
+        return Product::where('id','=',$id)->first();
+    }
 }

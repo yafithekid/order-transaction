@@ -4,16 +4,22 @@ namespace App\Domains\Services;
 
 
 use App\Domains\Exceptions\InvalidCouponException;
-use App\Domains\Exceptions\MultipleCouponsAppliedException;
 use App\Domains\Exceptions\NotEnoughProductQuantityException;
 use App\Domains\Exceptions\TransactionAlreadySubmittedException;
 use App\Models\Coupon;
+use App\Models\Customer;
 use App\Models\Product;
 use App\Models\Transaction;
 use App\Models\TransactionStatus;
 
 interface TransactionService
 {
+    /**
+     * @param Customer $customer
+     * @return Transaction
+     */
+    function findOrCreateTranscationCart(Customer $customer);
+
     /**
      * Add product to transaction, or remove the product from transaction if quantity is <= 0
      * @param Transaction $transaction
@@ -37,7 +43,6 @@ interface TransactionService
      * Submit the transaction and change the transaction status
      * @param Transaction $transaction
      * @return TransactionStatus
-     * @throws TransactionAlreadySubmittedException when transaction had been submitted
      */
     function submit(Transaction $transaction);
 

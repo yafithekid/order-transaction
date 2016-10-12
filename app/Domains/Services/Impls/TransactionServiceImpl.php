@@ -12,6 +12,7 @@ use App\Domains\Repos\TransactionRepo;
 use App\Domains\Repos\TransactionStatusRepo;
 use App\Domains\Services\TransactionService;
 use App\Models\Coupon;
+use App\Models\Customer;
 use App\Models\Product;
 use App\Models\Transaction;
 use App\Models\TransactionProduct;
@@ -77,14 +78,11 @@ class TransactionServiceImpl implements TransactionService
     /**
      * @param Transaction $transaction
      * @return TransactionStatus
-     * @throws TransactionAlreadySubmittedException when transaction had been submitted
      */
     function submit(Transaction $transaction)
     {
-        $transactionStatus = $this->transactionStatusRepo->findOrCreateByTransactionMostRecent($transaction);
-        if ($transactionStatus->isAlreadySubmitted()){
-            throw new TransactionAlreadySubmittedException();
-        }
+        $transaction->submitted = true;
+        $this->transactionRepo->save($transaction);
         return $this->addStatus($transaction,TransactionStatus::STATUS_NEED_PAYMENT_PROOF);
     }
 
@@ -174,6 +172,17 @@ class TransactionServiceImpl implements TransactionService
         }
         $transaction->coupon()->associate($coupon);
         $this->transactionRepo->save($transaction);
+        return $transaction;
+    }
+
+    function findOrCreateTranscationCart(Customer $customer)
+    {
+        $transaction = $this->transactionRepo->findByCustomerAndSubmittedMostRecent($customer,false);
+        if ($transaction == null){
+            $transaction = new Transaction();
+            $transaction->customer()->associate($customer);
+            $this->transactionRepo->save($transaction);
+        }
         return $transaction;
     }
 }
