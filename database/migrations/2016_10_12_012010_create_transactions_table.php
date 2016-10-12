@@ -15,10 +15,13 @@ class CreateTransactionsTable extends Migration
     {
         Schema::create('transactions',function (Blueprint $t){
             $t->bigIncrements('id');
-            $t->string('shipping_id');
+            $t->unsignedBigInteger('coupon_id')->nullable();
+            $t->string('shipping_id')->nullable();
             $t->unsignedBigInteger('customer_id');
             $t->string('payment_url')->nullable();
+
             $t->foreign('customer_id')->references('id')->on('customers')->onDelete('cascade')->onUpdate('cascade');
+            $t->foreign('coupon_id')->references('id')->on('coupons')->onDelete('cascade')->onUpdate('cascade');
 
             $t->unique('shipping_id');
             $t->index('customer_id');
@@ -33,6 +36,7 @@ class CreateTransactionsTable extends Migration
     public function down()
     {
         Schema::table('transactions',function(Blueprint $t){
+            $t->dropForeign('transactions_coupon_id_foreign');
             $t->dropForeign('transactions_customer_id_foreign');
         });
         Schema::drop('transactions');

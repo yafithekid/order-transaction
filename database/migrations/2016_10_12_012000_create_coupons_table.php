@@ -16,9 +16,10 @@ class CreateCouponsTable extends Migration
         Schema::create('coupons',function (Blueprint $t){
             $t->bigIncrements('id');
             $t->string('code');
-            $t->double('percentage_count');
-            $t->bigInteger('paid_cut');
-            $t->bigInteger('quantity');
+            $t->double('percentage_count')->nullable();
+            $t->bigInteger('paid_cut')->nullable();
+            $t->dateTime('valid_from');
+            $t->dateTime('valid_to');
         });
     }
 
