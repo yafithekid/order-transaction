@@ -5,6 +5,7 @@ namespace App\Domains\Services;
 
 use App\Domains\Exceptions\InvalidCouponException;
 use App\Domains\Exceptions\MultipleCouponsAppliedException;
+use App\Domains\Exceptions\NotEnoughProductQuantityException;
 use App\Domains\Exceptions\TransactionAlreadySubmittedException;
 use App\Models\Coupon;
 use App\Models\Product;
@@ -20,6 +21,7 @@ interface TransactionService
      * @param $quantity
      * @return void
      * @throws TransactionAlreadySubmittedException when transaction had been submitted
+     * @throws NotEnoughProductQuantityException when the product quantity is not enough
      */
     function addProduct(Transaction $transaction, Product $product, $quantity);
 

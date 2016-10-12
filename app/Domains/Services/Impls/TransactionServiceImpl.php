@@ -4,7 +4,9 @@ namespace App\Domains\Services\Impls;
 
 
 use App\Domains\Exceptions\InvalidCouponException;
+use App\Domains\Exceptions\NotEnoughProductQuantityException;
 use App\Domains\Exceptions\TransactionAlreadySubmittedException;
+use App\Domains\Repos\ProductRepo;
 use App\Domains\Repos\TransactionProductRepo;
 use App\Domains\Repos\TransactionRepo;
 use App\Domains\Repos\TransactionStatusRepo;
@@ -21,9 +23,11 @@ class TransactionServiceImpl implements TransactionService
     private $transactionProductRepo;
     private $transactionStatusRepo;
     private $transactionRepo;
+    private $productRepo;
 
-    function __construct(TransactionRepo $transactionRepo,TransactionProductRepo $transactionProductRepo,TransactionStatusRepo $transactionStatusRepo)
+    function __construct(ProductRepo $productRepo,TransactionRepo $transactionRepo,TransactionProductRepo $transactionProductRepo,TransactionStatusRepo $transactionStatusRepo)
     {
+        $this->productRepo = $productRepo;
         $this->transactionRepo = $transactionRepo;
         $this->transactionProductRepo = $transactionProductRepo;
         $this->transactionStatusRepo = $transactionStatusRepo;
@@ -33,6 +37,7 @@ class TransactionServiceImpl implements TransactionService
      * @param Transaction $transaction
      * @param Product $product
      * @param $quantity
+     * @throws NotEnoughProductQuantityException
      * @throws TransactionAlreadySubmittedException
      */
     function addProduct(Transaction $transaction, Product $product, $quantity)
@@ -41,6 +46,12 @@ class TransactionServiceImpl implements TransactionService
         $transactionStatus = $this->transactionStatusRepo->findOrCreateByTransactionMostRecent($transaction);
         if($transactionStatus->isAlreadySubmitted())
             throw new TransactionAlreadySubmittedException();
+
+        //check if product quantity is not enough
+        $updated_count = $this->productRepo->decreaseQuantityWhereQuantityGreaterEq($product,$quantity,$quantity);
+        if ($updated_count == 0)
+            throw new NotEnoughProductQuantityException();
+
         $transactionProduct = $this->transactionProductRepo->findByTransactionAndProduct($transaction,$product);
         if ($transactionProduct != null){
             if ($quantity > 0){
