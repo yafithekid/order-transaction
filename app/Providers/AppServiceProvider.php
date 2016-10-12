@@ -2,6 +2,10 @@
 
 namespace App\Providers;
 
+use App\Domains\Repos\CouponRepo;
+use App\Domains\Repos\CustomerRepo;
+use App\Domains\Repos\Impls\EloquentCouponRepo;
+use App\Domains\Repos\Impls\EloquentCustomerRepo;
 use App\Domains\Repos\Impls\EloquentProductRepo;
 use App\Domains\Repos\Impls\EloquentTransactionProductRepo;
 use App\Domains\Repos\Impls\EloquentTransactionRepo;
@@ -37,6 +41,8 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(TransactionStatusRepo::class,EloquentTransactionStatusRepo::class);
         $this->app->bind(TransactionProductRepo::class,EloquentTransactionProductRepo::class);
         $this->app->bind(ProductRepo::class,EloquentProductRepo::class);
+        $this->app->bind(CustomerRepo::class,EloquentCustomerRepo::class);
+        $this->app->bind(CouponRepo::class,EloquentCouponRepo::class);
 
         $this->app->bind(TransactionService::class,TransactionServiceImpl::class);
     }

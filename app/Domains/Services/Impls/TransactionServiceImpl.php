@@ -18,6 +18,7 @@ use App\Models\Transaction;
 use App\Models\TransactionProduct;
 use App\Models\TransactionStatus;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class TransactionServiceImpl implements TransactionService
 {
@@ -48,24 +49,22 @@ class TransactionServiceImpl implements TransactionService
         if($transactionStatus->isAlreadySubmitted())
             throw new TransactionAlreadySubmittedException();
 
-        //check if product quantity is not enough
-        $updated_count = $this->productRepo->decreaseQuantityWhereQuantityGreaterEq($product,$quantity,$quantity);
-        if ($updated_count == 0)
-            throw new NotEnoughProductQuantityException();
-
         $transactionProduct = $this->transactionProductRepo->findByTransactionAndProduct($transaction,$product);
         if ($transactionProduct != null){
             if ($quantity > 0){
                 //update and save
+                $this->modifyQuantityValue($product,$transactionProduct->quantity,$quantity);
                 $transactionProduct->quantity = $quantity;
                 $this->transactionProductRepo->save($transactionProduct);
             } else {
                 //delete
+                $this->modifyQuantityValue($product,$transactionProduct->quantity,0);
                 $this->transactionProductRepo->delete($transactionProduct);
             }
         } else {
             if ($quantity > 0){
                 //create new
+                $this->modifyQuantityValue($product,0,$quantity);
                 $transactionProduct = new TransactionProduct();
                 $transactionProduct->transaction()->associate($transaction);
                 $transactionProduct->product()->associate($product);
@@ -177,12 +176,26 @@ class TransactionServiceImpl implements TransactionService
 
     function findOrCreateTranscationCart(Customer $customer)
     {
-        $transaction = $this->transactionRepo->findByCustomerAndSubmittedMostRecent($customer,false);
+        $transaction = $this->transactionRepo->findCustomerTransactionCart($customer);
         if ($transaction == null){
             $transaction = new Transaction();
             $transaction->customer()->associate($customer);
             $this->transactionRepo->save($transaction);
         }
         return $transaction;
+    }
+
+    /**
+     * @param Product $product
+     * @param $old_value
+     * @param $new_value
+     * @throws NotEnoughProductQuantityException
+     */
+    function modifyQuantityValue(Product $product,$old_value,$new_value){
+        $query = Product::where('id','=',$product->id)->whereRaw("quantity + {$old_value} - {$new_value} >= 0");
+        $updated_count = $query->increment('quantity',($old_value - $new_value));
+        if ($updated_count == 0){
+            throw new NotEnoughProductQuantityException();
+        }
     }
 }

@@ -7,10 +7,12 @@ use App\Domains\Exceptions\NotEnoughProductQuantityException;
 use App\Domains\Repos\CouponRepo;
 use App\Domains\Repos\CustomerRepo;
 use App\Domains\Repos\ProductRepo;
+use App\Domains\Repos\TransactionProductRepo;
 use App\Domains\Repos\TransactionRepo;
 use App\Domains\Repos\TransactionStatusRepo;
 use App\Domains\Services\TransactionService;
 use App\Http\Controllers\Api\V1\JSONResponseFactory;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
 
 use App\Http\Requests;
@@ -24,9 +26,11 @@ class TransactionController extends Controller
     private $couponRepo;
     private $transactionRepo;
     private $transactionStatusRepo;
+    private $transactionProductRepo;
 
-    public function __construct(TransactionStatusRepo $transactionStatusRepo,TransactionRepo $transactionRepo,CouponRepo $couponRepo,ProductRepo $productRepo,CustomerRepo $customerRepo,TransactionService $transactionService)
+    public function __construct(TransactionProductRepo $transactionProductRepo,TransactionStatusRepo $transactionStatusRepo,TransactionRepo $transactionRepo,CouponRepo $couponRepo,ProductRepo $productRepo,CustomerRepo $customerRepo,TransactionService $transactionService)
     {
+        $this->transactionProductRepo = $transactionProductRepo;
         $this->transactionStatusRepo = $transactionStatusRepo;
         $this->transactionRepo = $transactionRepo;
         $this->couponRepo = $couponRepo;
@@ -160,6 +164,29 @@ class TransactionController extends Controller
                 'data' => $transaction
             ]);
         }
+    }
+
+    public function getCartProductQuantity($product_id,Request $request){
+        $customer = $this->customerRepo->findByToken($request->input('token'));
+        $product = $this->productRepo->findById($product_id);
+        if ($customer == null){
+            return JSONResponseFactory::customerNotFound();
+        }
+        if ($product == null){
+            return JSONResponseFactory::productNotFound();
+        }
+        $transaction = $this->transactionService->findOrCreateTranscationCart($customer);
+        $transactionProduct = $this->transactionProductRepo->findByTransactionAndProduct($transaction,$product);
+        if ($transactionProduct == null){
+            $quantity = 0;
+        } else {
+            $quantity = $transactionProduct->quantity;
+        }
+        return response()->json([
+            'status' => ResponseStatus::OK,
+            'message' => '',
+            'quantity' => intval($quantity)
+        ]);
     }
 
 

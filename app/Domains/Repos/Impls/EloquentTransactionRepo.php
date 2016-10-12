@@ -29,4 +29,9 @@ class EloquentTransactionRepo implements TransactionRepo
     {
         return Transaction::where('shipping_id','=',$input)->first();
     }
+
+    function findCustomerTransactionCart(Customer $customer)
+    {
+        return $this->findByCustomerAndSubmittedMostRecent($customer,false);
+    }
 }

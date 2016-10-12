@@ -18,4 +18,9 @@ interface CustomerRepo
      * @return Customer
      */
     public function findById($int);
+
+    /**
+     * @return Customer[]
+     */
+    public function findAll();
 }

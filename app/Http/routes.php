@@ -15,7 +15,7 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::group(['prefix'=>'api/v1/transactions'],function(){
+Route::group(['prefix'=>'api/v1/transactions','namespace'=>'Api\V1'],function(){
     Route::post('/add_product',['uses'=>'TransactionController@postAddProduct']);
     Route::post('/submit',['uses'=>'TransactionController@postSubmit']);
     Route::post('/apply_coupon',['uses'=>'TransactionController@postApplyCoupoon']);
@@ -26,4 +26,5 @@ Route::group(['prefix'=>'api/v1/transactions'],function(){
     Route::post('/{transaction_id}/received',['uses'=>'TransactionController@postReceived']);
     Route::get('/track_shipment',['uses'=>'TransactionController@getTrackShipment']);
     Route::get('/{transaction_id}',['uses'=>'TransactionController@getRead']);
+    Route::get('/cart_product_quantity/{product_id}',['uses'=>'TransactionController@getCartProductQuantity']);
 });

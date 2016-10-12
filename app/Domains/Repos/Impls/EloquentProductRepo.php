@@ -16,7 +16,7 @@ class EloquentProductRepo implements ProductRepo
 
     public function decreaseQuantityWhereQuantityGreaterEq(Product $product, $decrease_amount, $gte_amount)
     {
-        return Product::where('id','=',$product->id)->where('quantity','>=',$gte_amount)->decrement('quanity',$decrease_amount);
+        return Product::where('id','=',$product->id)->where('quantity','>=',$gte_amount)->decrement('quantity',$decrease_amount);
     }
 
     /**
@@ -26,5 +26,13 @@ class EloquentProductRepo implements ProductRepo
     public function findById($id)
     {
         return Product::where('id','=',$id)->first();
+    }
+
+    /**
+     * @return Product[]
+     */
+    public function findAll()
+    {
+        return Product::all();
     }
 }

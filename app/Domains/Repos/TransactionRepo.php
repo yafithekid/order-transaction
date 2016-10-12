@@ -12,6 +12,8 @@ interface  TransactionRepo
 
     function findByCustomerAndSubmittedMostRecent(Customer $customer, $submitted);
 
+    function findCustomerTransactionCart(Customer $customer);
+
     /**
      * @param $transaction_id
      * @return Transaction

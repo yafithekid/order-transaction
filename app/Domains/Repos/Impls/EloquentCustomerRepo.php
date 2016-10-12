@@ -18,4 +18,12 @@ class EloquentCustomerRepo implements CustomerRepo
     {
         return Customer::where('id','=',$int)->first();
     }
+
+    /**
+     * @return Customer[]
+     */
+    public function findAll()
+    {
+        return Customer::all();
+    }
 }

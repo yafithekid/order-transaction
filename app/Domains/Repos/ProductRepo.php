@@ -16,4 +16,9 @@ interface ProductRepo
      * @return Product
      */
     public function findById($id);
+
+    /**
+     * @return Product[]
+     */
+    public function findAll();
 }
