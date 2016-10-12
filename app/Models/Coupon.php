@@ -7,6 +7,10 @@ use Illuminate\Database\Eloquent\Model;
 /**
  * @property \DateTime valid_from
  * @property \DateTime valid_to
+ * @property string code
+ * @property int quantity
+ * @property float percentage_cut
+ * @property int paid_cut
  */
 class Coupon extends Model
 {

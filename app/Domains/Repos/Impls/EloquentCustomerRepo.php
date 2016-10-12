@@ -13,4 +13,9 @@ class EloquentCustomerRepo implements CustomerRepo
     {
         return Customer::where('token','=',$token)->first();
     }
+
+    public function findById($int)
+    {
+        return Customer::where('id','=',$int)->first();
+    }
 }
