@@ -210,6 +210,20 @@ class TransactionController extends Controller
         }
     }
 
+    public function getStatus($transaction_id){
+        $transaction = $this->transactionRepo->findById($transaction_id);
+        if ($transaction == null){
+            return JSONResponseFactory::transactionNotFound();
+        } else {
+            $statuses = $this->transactionStatusRepo->findAllByTransactionOrderByMostRecent($transaction);
+            return response()->json([
+                'status' => ResponseStatus::OK,
+                'message' => '',
+                'data' => $statuses
+            ]);
+        }
+    }
+
     public function getPrice($transaction_id,Request $request){
         $transaction = $this->transactionRepo->findById($transaction_id);
         if ($transaction == null){

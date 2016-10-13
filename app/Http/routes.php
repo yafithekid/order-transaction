@@ -30,6 +30,7 @@ Route::group(['prefix'=>'api/v1','namespace'=>'Api\V1'],function(){
         Route::post('/{transaction_id}/shipped',['uses'=>'TransactionController@postShipped']);
         Route::post('/{transaction_id}/received',['uses'=>'TransactionController@postReceived']);
         Route::get('/{transaction_id}/price',['uses'=>'TransactionController@getPrice']);
+        Route::get('/{transaction_id}/status',['uses'=>'TransactionController@getStatus']);
         Route::get('/track_shipment',['uses'=>'TransactionController@getTrackShipment']);
         Route::get('/{transaction_id}',['uses'=>'TransactionController@getRead']);
         Route::get('/cart_product_quantity/{product_id}',['uses'=>'TransactionController@getCartProductQuantity']);
