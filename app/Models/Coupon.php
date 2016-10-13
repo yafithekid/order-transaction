@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property int quantity
  * @property float percentage_cut
  * @property int paid_cut
+ * @property int id
  */
 class Coupon extends Model
 {

@@ -13,4 +13,9 @@ class EloquentCouponRepo implements CouponRepo
     {
         return Coupon::where('code','=',$code)->first();
     }
+
+    public function save(Coupon $coupon)
+    {
+        return $coupon->save();
+    }
 }

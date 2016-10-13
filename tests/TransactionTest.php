@@ -1,5 +1,6 @@
 <?php
 
+use App\Domains\Repos\CouponRepo;
 use App\Domains\Repos\CustomerRepo;
 use App\Domains\Repos\ProductRepo;
 use App\Domains\Repos\TransactionProductRepo;
@@ -7,6 +8,7 @@ use App\Domains\Repos\TransactionRepo;
 use App\Domains\Repos\TransactionStatusRepo;
 use App\Http\Controllers\Api\V1\ResponseCode;
 use App\Http\Controllers\Api\V1\ResponseStatus;
+use App\Models\Coupon;
 use App\Models\Customer;
 use App\Models\Product;
 use App\Models\TransactionStatus;
@@ -48,6 +50,11 @@ class TransactionTest extends TestCase
     private $products;
 
     /**
+     * @var CouponRepo
+     */
+    private $couponRepo;
+
+    /**
      *
      */
     private function instantiates()
@@ -67,6 +74,10 @@ class TransactionTest extends TestCase
         if ($this->transactionStatusRepo == null){
             $this->transactionStatusRepo = app()->make(TransactionStatusRepo::class);
         }
+        if ($this->couponRepo == null){
+            $this->couponRepo = app()->make(CouponRepo::class);
+        }
+
         if ($this->customers == null) {
             $_customers = $this->customerRepo->findAll();
             $this->customers = new Collection();
@@ -143,6 +154,11 @@ class TransactionTest extends TestCase
         $transaction->coupon_id = null;
         $this->transactionRepo->save($transaction);
 
+        //set coupon quantity to 10
+        $coupon = $this->couponRepo->findByCode('k1');
+        $coupon->quantity = 10;
+        $this->couponRepo->save($coupon);
+
         //apply coupon
         $this->json('post','/api/v1/transactions/apply_coupon',[
             'code' => 'k1',
@@ -152,6 +168,37 @@ class TransactionTest extends TestCase
         //ensure the coupon id data is updated
         $transaction = $this->transactionRepo->findCustomerTransactionCart($this->customers[1]);
         $this->assertEquals(1,$transaction->coupon_id);
+
+        //ensure the quantity of coupon is deducted
+        $updatedCoupon = $this->couponRepo->findByCode('k1');
+        $this->assertEquals(9,$updatedCoupon->quantity);
+    }
+
+
+    public function testModifyCoupon()
+    {
+        $this->instantiates();
+
+        //reset the customer coupon
+        $transaction = $this->transactionRepo->findCustomerTransactionCart($this->customers[1]);
+        $transaction->coupon_id = null;
+        $this->transactionRepo->save($transaction);
+
+        //set coupon quantity to 10
+        Coupon::query()->whereIn('id',[1,2])->update(['quantity'=>10]);
+
+        $this->json('post','/api/v1/transactions/apply_coupon',[
+            'code' => 'k1',
+            'token' => 'token1'
+        ])->seeJson(['status'=>ResponseStatus::OK]);
+
+        $this->assertEquals(1,Coupon::where('code','=','k1')->where('quantity','=',9)->count());
+        $this->json('post','/api/v1/transactions/apply_coupon',[
+            'code' => 'k2',
+            'token' => 'token1'
+        ])->seeJson(['status'=>ResponseStatus::OK]);
+        $this->assertEquals(1,Coupon::where('code','=','k1')->where('quantity','=',10)->count());
+        $this->assertEquals(1,Coupon::where('code','=','k2')->where('quantity','=',9)->count());
     }
 
     public function testInvalidCouponDate()

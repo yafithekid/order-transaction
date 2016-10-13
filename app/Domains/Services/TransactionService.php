@@ -4,6 +4,7 @@ namespace App\Domains\Services;
 
 
 use App\Domains\Exceptions\InvalidCouponException;
+use App\Domains\Exceptions\NotEnoughCouponException;
 use App\Domains\Exceptions\NotEnoughProductQuantityException;
 use App\Domains\Exceptions\TransactionAlreadySubmittedException;
 use App\Models\Coupon;
@@ -36,6 +37,7 @@ interface TransactionService
      * @param Coupon $coupon
      * @return Transaction
      * @throws InvalidCouponException
+     * @throws NotEnoughCouponException
      */
     function applyCoupon(Transaction $transaction,Coupon $coupon);
 

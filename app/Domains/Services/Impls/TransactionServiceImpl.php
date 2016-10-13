@@ -4,6 +4,7 @@ namespace App\Domains\Services\Impls;
 
 
 use App\Domains\Exceptions\InvalidCouponException;
+use App\Domains\Exceptions\NotEnoughCouponException;
 use App\Domains\Exceptions\NotEnoughProductQuantityException;
 use App\Domains\Exceptions\TransactionAlreadySubmittedException;
 use App\Domains\Repos\ProductRepo;
@@ -160,18 +161,22 @@ class TransactionServiceImpl implements TransactionService
         return $this->addStatus($transaction,TransactionStatus::STATUS_RECEIVED);
     }
 
-    /**
-     * @param Transaction $transaction
-     * @param Coupon $coupon
-     * @return Transaction
-     * @throws InvalidCouponException
-     */
     function applyCoupon(Transaction $transaction, Coupon $coupon)
     {
         $now = Carbon::now();
         if ($now < $coupon->valid_from || $now > $coupon->valid_to){
             throw new InvalidCouponException();
         }
+        //check if there is a coupon applied to the transaction, must be removed first.
+        if ($transaction->coupon != null){
+            $oldCoupon = $transaction->coupon;
+            $this->incrementCouponQuantity($oldCoupon,1);
+            $transaction->coupon_id = null;
+            $this->transactionRepo->save($transaction);
+        }
+        //remove the coupon quantity
+        $this->incrementCouponQuantity($coupon,-1);
+
         $transaction->coupon()->associate($coupon);
         $this->transactionRepo->save($transaction);
         return $transaction;
@@ -199,6 +204,14 @@ class TransactionServiceImpl implements TransactionService
         $updated_count = $query->increment('quantity',($old_value - $new_value));
         if ($updated_count == 0){
             throw new NotEnoughProductQuantityException();
+        }
+    }
+
+    function incrementCouponQuantity(Coupon $coupon, $increment){
+        $query = Coupon::where('id','=',$coupon->id)->whereRaw("quantity + {$increment} >= 0");
+        $updated_count = $query->increment('quantity',($increment));
+        if ($updated_count == 0){
+            throw new NotEnoughCouponException();
         }
     }
 }
