@@ -5,6 +5,8 @@ use App\Models\Coupon;
 use App\Models\Customer;
 use App\Models\Product;
 use App\Models\Transaction;
+use App\Models\TransactionProduct;
+use App\Models\TransactionStatus;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -16,6 +18,8 @@ class DatabaseSeeder extends Seeder
      */
     public function run()
     {
+        TransactionProduct::query()->delete();
+        TransactionStatus::query()->delete();
         Transaction::query()->delete();
         Admin::query()->delete();
         Coupon::query()->delete();

@@ -230,6 +230,18 @@ class TransactionTest extends TestCase
         $this->assertNull($updatedTransaction->coupon_id);
     }
 
+    public function testPercentageCutCoupon()
+    {
+        $this->json('get','/api/v1/transactions/8/price',[])
+            ->seeJson(['status'=>ResponseStatus::OK,'gross_price'=>10000,'net_price'=>9000]);
+    }
+
+    public function testPaidCutCoupon()
+    {
+        $this->json('get','/api/v1/transactions/9/price',[])
+            ->seeJson(['status'=>ResponseStatus::OK,'gross_price'=>10000,'net_price'=>0]);
+    }
+
     public function testSubmit()
     {
         $this->instantiates();

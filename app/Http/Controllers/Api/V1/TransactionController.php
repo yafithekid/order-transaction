@@ -155,7 +155,7 @@ class TransactionController extends Controller
 
     public function getRead($transaction_id,Request $request){
         $transaction = $this->transactionRepo->findById($transaction_id);
-        if ($transaction_id == null){
+        if ($transaction == null){
             return JSONResponseFactory::transactionNotFound();
         } else {
             return response()->json([
@@ -164,6 +164,32 @@ class TransactionController extends Controller
                 'data' => $transaction
             ]);
         }
+    }
+
+    public function getPrice($transaction_id,Request $request){
+        $transaction = $this->transactionRepo->findById($transaction_id);
+        if ($transaction == null){
+            return JSONResponseFactory::transactionNotFound();
+        }
+        $transactionProducts = $this->transactionProductRepo->findAllByTransactionWithProduct($transaction);
+        $gross_price = 0;
+        foreach ($transactionProducts as $transactionProduct){
+            $gross_price += $transactionProduct->quantity * $transactionProduct->product->price;
+        }
+        $coupon = $transaction->coupon;
+        if ($coupon == null){
+            $net_price = $gross_price;
+        } elseif ($coupon->percentage_cut > 0){
+            $net_price = (1.0 - $coupon->percentage_cut) * $gross_price;
+        } elseif ($coupon->paid_cut > 0){
+            $net_price = max(0,$gross_price - $coupon->paid_cut);
+        }
+        return response()->json([
+            'status' => ResponseStatus::OK,
+            'message' => '',
+            'gross_price' => $gross_price,
+            'net_price' => $net_price
+        ]);
     }
 
     public function getCartProductQuantity($product_id,Request $request){

@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 /**
  * @property integer quantity
+ * @property Product product
  */
 class TransactionProduct extends Model
 {

@@ -57,6 +57,14 @@ class TransactionSeeder extends Seeder
         //7. received transaction
         $transaction = $this->mockTransactionWithProducts($firstCustomer);
         $this->transactionService->received($transaction);
+        $transaction = $this->mockTransactionWithProducts($firstCustomer);
+        $transaction->coupon_id = 1;
+        $this->transactionRepo->save($transaction);
+        $this->transactionService->submit($transaction);
+        $transaction = $this->mockTransactionWithProducts($firstCustomer);
+        $transaction->coupon_id = 2;
+        $this->transactionRepo->save($transaction);
+        $this->transactionService->submit($transaction);
     }
 
     private function mockTransactionWithProducts(Customer $customer){
