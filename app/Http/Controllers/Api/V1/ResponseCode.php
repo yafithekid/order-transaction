@@ -16,7 +16,7 @@ class ResponseCode
 
     const COUPON_NOT_FOUND = "cpnf";
     const COUPON_INVALID = "cpiv";
+    const COUPON_NOT_ENOUGH = "cpnq";
 
     const ADMIN_INVALID_TOKEN = "adit";
-
 }

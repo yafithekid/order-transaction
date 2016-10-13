@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Domains\Exceptions\InvalidCouponException;
+use App\Domains\Exceptions\NotEnoughCouponException;
 use App\Domains\Exceptions\NotEnoughProductQuantityException;
 use App\Domains\Repos\AdminRepo;
 use App\Domains\Repos\CouponRepo;
@@ -97,6 +98,12 @@ class TransactionController extends Controller
                 'status' => ResponseStatus::ERROR,
                 'message' => 'Invalid coupon',
                 'code' => ResponseCode::COUPON_INVALID
+            ]);
+        } catch (NotEnoughCouponException $e){
+            return response()->json([
+                'status' => ResponseStatus::ERROR,
+                'message' => 'Not enough coupon quantity',
+                'code' => ResponseCode::COUPON_NOT_ENOUGH
             ]);
         }
     }
