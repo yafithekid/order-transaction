@@ -107,6 +107,20 @@ class TransactionController extends Controller
         return JSONResponseFactory::ok();
     }
 
+    public function postResubmitData($transaction_id,Request $request){
+        $transaction = $this->transactionRepo->findById($transaction_id);
+        if($transaction == null){
+            return JSONResponseFactory::transactionNotFound();
+        }
+        $email = $request->input('email');
+        $customer_name = $request->input('customer_name');
+        $phone = $request->input('phone');
+        $address = $request->input('address');
+        $payment_url =  $request->input('payment_url');
+        $this->transactionService->resubmitData($transaction,$payment_url,$customer_name,$phone,$email,$address);
+        return JSONResponseFactory::ok();
+    }
+
     public function postReject($transaction_id,Request $request){
         $transaction = $this->transactionRepo->findById($transaction_id);
         if ($transaction == null){

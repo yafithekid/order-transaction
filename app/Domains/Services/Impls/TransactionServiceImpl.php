@@ -222,4 +222,17 @@ class TransactionServiceImpl implements TransactionService
             throw new NotEnoughCouponException();
         }
     }
+
+    function resubmitData(Transaction $transaction, $payment_url, $customer_name, $phone, $email, $address)
+    {
+        $transaction->payment_url = $payment_url;
+        $transaction->customer_name = $customer_name;
+        $transaction->phone = $phone;
+        $transaction->email = $email;
+        $transaction->address = $address;
+        $transactionStatus = $this->transactionStatusRepo->findByTransactionMostRecent($transaction);
+        if (!$transactionStatus->isNeedChecking()){
+            $this->addStatus($transaction,TransactionStatus::STATUS_NEED_CHECKING,null);
+        }
+    }
 }

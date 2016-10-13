@@ -91,4 +91,6 @@ interface TransactionService
      * @return TransactionStatus
      */
     function addStatus(Transaction $transaction,$status,$description = null);
+
+    function resubmitData(Transaction $transaction, $payment_url, $customer_name, $phone, $email, $address);
 }

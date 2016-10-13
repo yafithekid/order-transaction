@@ -23,6 +23,7 @@ Route::group(['prefix'=>'api/v1','namespace'=>'Api\V1'],function(){
         Route::post('/add_product',['uses'=>'TransactionController@postAddProduct']);
         Route::post('/submit',['uses'=>'TransactionController@postSubmit']);
         Route::post('/apply_coupon',['uses'=>'TransactionController@postApplyCoupon']);
+        Route::post('/{transaction_id}/resubmit_data',['uses'=>'TransactionController@postResubmitData']);
         Route::post('/{transaction_id}/send_payment_proof',['uses'=>'TransactionController@postSendPaymentProof']);
         Route::post('/{transaction_id}/reject',['uses'=>'TransactionController@postReject']);
         Route::post('/{transaction_id}/prepare_shipment',['uses'=>'TransactionController@postPrepareShipment']);

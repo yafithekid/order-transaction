@@ -308,6 +308,20 @@ class TransactionTest extends TestCase
         $this->assertEquals($description,$transactionStatus->description);
     }
 
+    public function testResubmitData()
+    {
+        $this->instantiates();
+        $this->json('post','api/v1/transactions/3/resubmit_data',[
+            'customer_name' => 'a',
+            'email' => 'a@a.com',
+            'address' => 'a',
+            'phone' => '01234'
+        ])->seeJson(['status'=>ResponseStatus::OK]);
+        $transaction = $this->transactionRepo->findById(3);
+        $transactionStatus = $this->transactionStatusRepo->findByTransactionMostRecent($transaction);
+        $this->assertEquals(TransactionStatus::STATUS_NEED_CHECKING,$transactionStatus->status);
+    }
+
     public function testPrepareForShipment()
     {
         $this->instantiates();
