@@ -259,6 +259,9 @@ class TransactionTest extends TestCase
     {
         $this->instantiates();
         $url = 'http://lorempixel.com/200/200/';
+        $this->json('post','api/v1/images/upload',[
+            'image' => 'base64:1234567890'
+        ])->seeJson(['status'=>ResponseStatus::OK]);
         $this->json('post','api/v1/transactions/2/send_payment_proof',[
             'payment_url' => $url
         ])->seeJson(['status'=>ResponseStatus::OK]);
@@ -297,12 +300,17 @@ class TransactionTest extends TestCase
     public function testShipped()
     {
         $this->instantiates();
-        $this->json('post','api/v1/transactions/5/shipped',[
-
+        $shipping_id = 'S1234';
+        $this->json('post','/api/v1/transactions/5/shipped',[
+            'shipping_id' => $shipping_id
         ])->seeJson(['status'=>ResponseStatus::OK]);
         $transaction = $this->transactionRepo->findById(5);
         $transactionStatus = $this->transactionStatusRepo->findByTransactionMostRecent($transaction);
         $this->assertEquals(TransactionStatus::STATUS_SHIPPED,$transactionStatus->status);
+        $this->assertEquals($shipping_id,$transaction->shipping_id);
+        $this->json('get','/api/v1/transactions/track_shipment',[
+            'shipping_id' => $shipping_id
+        ])->seeJson(['status'=>ResponseStatus::OK]);
     }
 
     public function testReceived()
