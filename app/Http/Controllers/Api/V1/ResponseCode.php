@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Api\V1;
 class ResponseCode
 {
     const CUSTOMER_NOT_FOUND = "cunf";
+    const CUSTOMER_INVALID_TOKEN = "cuit";
 
     const TRANSACTION_EMPTY_CART = "trec";
     const TRANSACTION_NOT_FOUND = "trnf";
@@ -15,5 +16,7 @@ class ResponseCode
 
     const COUPON_NOT_FOUND = "cpnf";
     const COUPON_INVALID = "cpiv";
+
+    const ADMIN_INVALID_TOKEN = "adit";
 
 }

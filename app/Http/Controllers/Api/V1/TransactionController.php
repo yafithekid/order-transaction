@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Domains\Exceptions\InvalidCouponException;
 use App\Domains\Exceptions\NotEnoughProductQuantityException;
+use App\Domains\Repos\AdminRepo;
 use App\Domains\Repos\CouponRepo;
 use App\Domains\Repos\CustomerRepo;
 use App\Domains\Repos\ProductRepo;
@@ -27,9 +28,11 @@ class TransactionController extends Controller
     private $transactionRepo;
     private $transactionStatusRepo;
     private $transactionProductRepo;
+    private $adminRepo;
 
-    public function __construct(TransactionProductRepo $transactionProductRepo,TransactionStatusRepo $transactionStatusRepo,TransactionRepo $transactionRepo,CouponRepo $couponRepo,ProductRepo $productRepo,CustomerRepo $customerRepo,TransactionService $transactionService)
+    public function __construct(AdminRepo $adminRepo,TransactionProductRepo $transactionProductRepo,TransactionStatusRepo $transactionStatusRepo,TransactionRepo $transactionRepo,CouponRepo $couponRepo,ProductRepo $productRepo,CustomerRepo $customerRepo,TransactionService $transactionService)
     {
+        $this->adminRepo = $adminRepo;
         $this->transactionProductRepo = $transactionProductRepo;
         $this->transactionStatusRepo = $transactionStatusRepo;
         $this->transactionRepo = $transactionRepo;
@@ -44,7 +47,7 @@ class TransactionController extends Controller
         $product = $this->productRepo->findById($request->input('product_id'));
         $qty = $request->input('quantity');
         if ($customer == null){
-            return JSONResponseFactory::customerNotFound();
+            return JSONResponseFactory::invalidCustomerToken();
         }
         if ($product == null){
             return JSONResponseFactory::productNotFound();
@@ -64,13 +67,13 @@ class TransactionController extends Controller
 
     public function postSubmit(Request $request){
         $customer = $this->customerRepo->findByToken($request->input('token'));
+        if ($customer == null){
+            return JSONResponseFactory::invalidCustomerToken();
+        }
         $address = $request->input('address',$customer->address);
         $email = $request->input('email',$customer->email);
         $customer_name = $request->input('customer_name',$customer->name);
         $phone = $request->input('phone',$customer->phone);
-        if ($customer == null){
-            return JSONResponseFactory::customerNotFound();
-        }
         $transaction = $this->transactionService->findOrCreateTranscationCart($customer);
         $this->transactionService->submit($transaction,$customer_name,$phone,$email,$address);
         return JSONResponseFactory::ok();
@@ -79,13 +82,13 @@ class TransactionController extends Controller
     public function postApplyCoupon(Request $request){
         $customer = $this->customerRepo->findByToken($request->input('token'));
         $coupon = $this->couponRepo->findByCode($request->input('code'));
-        $transaction = $this->transactionService->findOrCreateTranscationCart($customer);
         if ($customer == null){
-            return JSONResponseFactory::customerNotFound();
+            return JSONResponseFactory::invalidCustomerToken();
         }
         if ($coupon == null){
             return JSONResponseFactory::couponNotFound();
         }
+        $transaction = $this->transactionService->findOrCreateTranscationCart($customer);
         try {
             $this->transactionService->applyCoupon($transaction,$coupon);
             return JSONResponseFactory::ok();
@@ -100,6 +103,9 @@ class TransactionController extends Controller
 
     public function postSendPaymentProof($transaction_id,Request $request){
         $transaction = $this->transactionRepo->findById($transaction_id);
+        if ($transaction->customer->token != $request->input('token')){
+            return JSONResponseFactory::invalidCustomerToken();
+        }
         if ($transaction == null){
             return JSONResponseFactory::transactionNotFound();
         }
@@ -111,6 +117,9 @@ class TransactionController extends Controller
         $transaction = $this->transactionRepo->findById($transaction_id);
         if($transaction == null){
             return JSONResponseFactory::transactionNotFound();
+        }
+        if ($transaction->customer->token != $request->input('token')){
+            return JSONResponseFactory::invalidCustomerToken();
         }
         $email = $request->input('email');
         $customer_name = $request->input('customer_name');
@@ -126,6 +135,9 @@ class TransactionController extends Controller
         if ($transaction == null){
             return JSONResponseFactory::transactionNotFound();
         }
+        if ($this->adminRepo->findByToken($request->input('token')) == null){
+            return JSONResponseFactory::invalidAdminToken();
+        }
         $this->transactionService->reject($transaction,$request->input('description'));
         return JSONResponseFactory::ok();
     }
@@ -134,6 +146,9 @@ class TransactionController extends Controller
         $transaction = $this->transactionRepo->findById($transaction_id);
         if ($transaction == null){
             return JSONResponseFactory::transactionNotFound();
+        }
+        if ($this->adminRepo->findByToken($request->input('token')) == null){
+            return JSONResponseFactory::invalidAdminToken();
         }
         $this->transactionService->prepareShipment($transaction);
         return JSONResponseFactory::ok();
@@ -144,6 +159,9 @@ class TransactionController extends Controller
         if ($transaction == null){
             return JSONResponseFactory::transactionNotFound();
         }
+        if ($this->adminRepo->findByToken($request->input('token')) == null){
+            return JSONResponseFactory::invalidAdminToken();
+        }
         $this->transactionService->shipped($transaction,$request->input('shipping_id'));
         return JSONResponseFactory::ok();
     }
@@ -152,6 +170,9 @@ class TransactionController extends Controller
         $transaction = $this->transactionRepo->findById($transaction_id);
         if ($transaction_id == null){
             return JSONResponseFactory::transactionNotFound();
+        }
+        if ($this->adminRepo->findByToken($request->input('token')) == null){
+            return JSONResponseFactory::invalidAdminToken();
         }
         $this->transactionService->received($transaction);
         return JSONResponseFactory::ok();
@@ -216,7 +237,7 @@ class TransactionController extends Controller
         $customer = $this->customerRepo->findByToken($request->input('token'));
         $product = $this->productRepo->findById($product_id);
         if ($customer == null){
-            return JSONResponseFactory::customerNotFound();
+            return JSONResponseFactory::invalidCustomerToken();
         }
         if ($product == null){
             return JSONResponseFactory::productNotFound();

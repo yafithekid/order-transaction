@@ -92,9 +92,10 @@ class TransactionTest extends TestCase
                 $this->products->put($product->id, $product);
             }
         }
+        $this->seed(DatabaseSeeder::class);
     }
 
-    public function testCustomerNotFound()
+    public function testAddProductCustomerNotFound()
     {
         $this->instantiates();
         $this->json('post','/api/v1/transactions/add_product',[
@@ -143,6 +144,15 @@ class TransactionTest extends TestCase
             'quantity' => 1,
             'token' => 'token1'
         ])->seeJson(['status'=>ResponseStatus::OK]);
+    }
+
+    public function testApplyCouponInvalidToken()
+    {
+        $this->instantiates();
+        $this->json('post','/api/v1/transactions/apply_coupon',[
+            'code' => 'k1'
+        ])->seeJson(['status'=>ResponseStatus::ERROR,'code'=>ResponseCode::CUSTOMER_INVALID_TOKEN]);
+        $this->assertResponseStatus(403);
     }
 
     public function testApplyCoupon()
@@ -242,6 +252,13 @@ class TransactionTest extends TestCase
             ->seeJson(['status'=>ResponseStatus::OK,'gross_price'=>10000,'net_price'=>0]);
     }
 
+    public function testSubmitInvalidToken()
+    {
+        $this->instantiates();
+        $this->json('post','/api/v1/transactions/submit',[
+        ])->seeJson(['status'=>ResponseStatus::ERROR,'code'=>ResponseCode::CUSTOMER_INVALID_TOKEN]);
+    }
+
     public function testSubmitNoData()
     {
         $this->instantiates();
@@ -277,6 +294,14 @@ class TransactionTest extends TestCase
         $this->assertEquals('01234',$updatedTransaction->phone);
     }
 
+    public function testSendPaymentProofNoToken()
+    {
+        $this->instantiates();
+        $this->json('post','/api/v1/transactions/submit',[
+
+        ])->seeJson(['status'=>ResponseStatus::ERROR,'code'=>ResponseCode::CUSTOMER_INVALID_TOKEN]);
+    }
+
     public function testSendPaymentProof()
     {
         $this->instantiates();
@@ -285,7 +310,8 @@ class TransactionTest extends TestCase
             'image' => 'base64:1234567890'
         ])->seeJson(['status'=>ResponseStatus::OK]);
         $this->json('post','api/v1/transactions/2/send_payment_proof',[
-            'payment_url' => $url
+            'payment_url' => $url,
+            'token'=>'token1'
         ])->seeJson(['status'=>ResponseStatus::OK]);
 
         $transaction = $this->transactionRepo->findById(2);
@@ -294,12 +320,21 @@ class TransactionTest extends TestCase
         $this->assertEquals(TransactionStatus::STATUS_NEED_CHECKING,$transactionStatus->status);
     }
 
+    public function testRejectNoToken()
+    {
+        $this->instantiates();
+        $this->json('post','api/v1/transactions/2/send_payment_proof',[
+            'payment_url' => 'aaa',
+        ])->seeJson(['status'=>ResponseStatus::ERROR,'code'=>ResponseCode::CUSTOMER_INVALID_TOKEN]);
+    }
+
     public function testReject()
     {
         $this->instantiates();
         $description = 'Invalid email address';
         $this->json('post','api/v1/transactions/3/reject',[
-            'description' => $description
+            'description' => $description,
+            'token'=>'token1'
         ])->seeJson(['status' => ResponseStatus::OK]);
 
         $transaction = $this->transactionRepo->findById(3);
@@ -315,17 +350,26 @@ class TransactionTest extends TestCase
             'customer_name' => 'a',
             'email' => 'a@a.com',
             'address' => 'a',
-            'phone' => '01234'
+            'phone' => '01234',
+            'token'=>'token1'
         ])->seeJson(['status'=>ResponseStatus::OK]);
         $transaction = $this->transactionRepo->findById(3);
         $transactionStatus = $this->transactionStatusRepo->findByTransactionMostRecent($transaction);
         $this->assertEquals(TransactionStatus::STATUS_NEED_CHECKING,$transactionStatus->status);
     }
 
+    public function testPrepareForShipmentInvalidToken()
+    {
+        $this->json('post','api/v1/transactions/3/prepare_shipment',[
+        ])->seeJson(['status'=>ResponseStatus::ERROR,'code'=>ResponseCode::ADMIN_INVALID_TOKEN]);
+        $this->assertResponseStatus(403);
+    }
+
     public function testPrepareForShipment()
     {
         $this->instantiates();
         $this->json('post','api/v1/transactions/3/prepare_shipment',[
+            'token'=>'token1'
         ])->seeJson(['status' => ResponseStatus::OK]);
 
         $transaction = $this->transactionRepo->findById(3);
@@ -333,12 +377,21 @@ class TransactionTest extends TestCase
         $this->assertEquals(TransactionStatus::STATUS_PREPARED_FOR_SHIPMENT,$transactionStatus->status);
     }
 
+    public function testShippedInvalidToken()
+    {
+        $this->instantiates();
+        $this->json('post','/api/v1/transactions/5/shipped',[
+            'shipping_id'=>'1234'
+        ])->seeJson(['status'=>ResponseStatus::ERROR,'code'=>ResponseCode::ADMIN_INVALID_TOKEN]);
+    }
+
     public function testShipped()
     {
         $this->instantiates();
         $shipping_id = 'S1234';
         $this->json('post','/api/v1/transactions/5/shipped',[
-            'shipping_id' => $shipping_id
+            'shipping_id' => $shipping_id,
+            'token'=>'token1'
         ])->seeJson(['status'=>ResponseStatus::OK]);
         $transaction = $this->transactionRepo->findById(5);
         $transactionStatus = $this->transactionStatusRepo->findByTransactionMostRecent($transaction);
@@ -349,10 +402,18 @@ class TransactionTest extends TestCase
         ])->seeJson(['status'=>ResponseStatus::OK]);
     }
 
+    public function testReceivedInvalidToken()
+    {
+        $this->instantiates();
+        $this->json('post','/api/v1/transactions/5/shipped',[
+        ])->seeJson(['status'=>ResponseStatus::ERROR,'code'=>ResponseCode::ADMIN_INVALID_TOKEN]);
+    }
+
     public function testReceived()
     {
         $this->instantiates();
         $this->json('post','api/v1/transactions/6/received',[
+            'token'=>'token1'
         ])->seeJson(['status' => ResponseStatus::OK]);
         $transaction = $this->transactionRepo->findById(6);
         $transactionStatus = $this->transactionStatusRepo->findByTransactionMostRecent($transaction);
