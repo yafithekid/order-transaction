@@ -36,25 +36,25 @@ class TransactionSeeder extends Seeder
             DB::statement("SELECT setval('transactions_id_seq',1,FALSE)");
         }
         $firstCustomer = $this->customerRepo->findById(1);
-        //ongoing transaction cart
+        //1. ongoing transaction cart
         $transaction = $this->mockTransactionWithProducts($firstCustomer);
         $this->transactionService->addStatus($transaction,TransactionStatus::STATUS_UNSUBMITTED);
-        //submitted transaction
+        //2. submitted transaction
         $transaction = $this->mockTransactionWithProducts($firstCustomer);
         $this->transactionService->submit($transaction);
-        //paid transaction
+        //3. paid transaction
         $transaction = $this->mockTransactionWithProducts($firstCustomer);
         $this->transactionService->sendPaymentProof($transaction,"http://lorempixel.com/125/125");
-        //rejected transaction
+        //4. rejected transaction
         $transaction = $this->mockTransactionWithProducts($firstCustomer);
         $this->transactionService->reject($transaction,"Invalid address");
-        //prepared shipment transaction
+        //5. prepared shipment transaction
         $transaction = $this->mockTransactionWithProducts($firstCustomer);
         $this->transactionService->prepareShipment($transaction);
-        //shipped transaction
+        //6. shipped transaction
         $transaction = $this->mockTransactionWithProducts($firstCustomer);
         $this->transactionService->shipped($transaction,"123");
-        //received transaction
+        //7. received transaction
         $transaction = $this->mockTransactionWithProducts($firstCustomer);
         $this->transactionService->received($transaction);
     }
@@ -63,6 +63,7 @@ class TransactionSeeder extends Seeder
         $product = $this->productRepo->findById(1);
         $transaction = new Transaction();
         $transaction->customer()->associate($customer);
+        $this->transactionRepo->save($transaction);
         $this->transactionService->addProduct($transaction,$product,1);
         return $transaction;
 

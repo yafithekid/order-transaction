@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property string payment_url
  * @property string shipping_id
  * @property boolean submitted
+ * @property integer coupon_id
  */
 class Transaction extends Model
 {

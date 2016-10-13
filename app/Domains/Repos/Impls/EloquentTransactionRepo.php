@@ -17,7 +17,7 @@ class EloquentTransactionRepo implements TransactionRepo
 
     function findByCustomerAndSubmittedMostRecent(Customer $customer, $submitted)
     {
-        return Transaction::where('customer_id','=',$customer->id)->where('submitted','=',$submitted)->first();
+        return Transaction::where('customer_id','=',$customer->id)->where('submitted','=',$submitted)->orderBy('id','desc')->first();
     }
 
     public function findById($transaction_id)

@@ -80,7 +80,6 @@ class TransactionServiceImpl implements TransactionService
      */
     function submit(Transaction $transaction)
     {
-        $transaction->submitted = true;
         $this->transactionRepo->save($transaction);
         return $this->addStatus($transaction,TransactionStatus::STATUS_NEED_PAYMENT_PROOF);
     }
@@ -98,6 +97,10 @@ class TransactionServiceImpl implements TransactionService
         $transactionStatus->transaction()->associate($transaction);
         $transactionStatus->status = $status;
         $transactionStatus->description = $description;
+        if ($status != TransactionStatus::STATUS_UNSUBMITTED){
+            $transaction->submitted = true;
+            $this->transactionRepo->save($transaction);
+        }
         $this->transactionStatusRepo->save($transactionStatus);
         return $transactionStatus;
     }

@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 /**
  * @property string status
  * @property string description
+ * @property bool submitted
  */
 class TransactionStatus extends Model
 {
