@@ -8,8 +8,16 @@ use App\Models\Transaction;
 
 interface  TransactionRepo
 {
+    /**
+     * @param Transaction $transaction
+     */
     function save(Transaction $transaction);
 
+    /**
+     * @param Customer $customer
+     * @param $submitted
+     * @return Transaction
+     */
     function findByCustomerAndSubmittedMostRecent(Customer $customer, $submitted);
 
     /**

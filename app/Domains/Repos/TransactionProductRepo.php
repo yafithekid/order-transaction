@@ -22,7 +22,13 @@ interface TransactionProductRepo
      */
     function findAllByTransactionWithProduct(Transaction $transaction);
 
+    /**
+     * @param TransactionProduct $transactionProduct
+     */
     function save(TransactionProduct $transactionProduct);
 
+    /**
+     * @param TransactionProduct $transactionProduct
+     */
     function delete(TransactionProduct $transactionProduct);
 }

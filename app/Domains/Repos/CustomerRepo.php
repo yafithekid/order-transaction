@@ -8,13 +8,13 @@ use App\Models\Customer;
 interface CustomerRepo
 {
     /**
-     * @param $token
+     * @param string $token
      * @return Customer
      */
     function findByToken($token);
 
     /**
-     * @param $int
+     * @param integer $int
      * @return Customer
      */
     public function findById($int);

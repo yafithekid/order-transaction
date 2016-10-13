@@ -13,8 +13,6 @@ use App\Domains\Repos\TransactionProductRepo;
 use App\Domains\Repos\TransactionRepo;
 use App\Domains\Repos\TransactionStatusRepo;
 use App\Domains\Services\TransactionService;
-use App\Http\Controllers\Api\V1\JSONResponseFactory;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
 
 use App\Http\Requests;

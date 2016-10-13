@@ -16,6 +16,7 @@ use App\Models\TransactionStatus;
 interface TransactionService
 {
     /**
+     * Find customer transaction cart or create new one if null
      * @param Customer $customer
      * @return Transaction
      */
@@ -69,18 +70,25 @@ interface TransactionService
     function reject(Transaction $transaction,$description);
 
     /**
+     * Set the transaction status to prepared for shipment
      * @param Transaction $transaction
      * @return mixed
      */
     function prepareShipment(Transaction $transaction);
 
     /**
+     * Set the transaction status to shipped
      * @param Transaction $transaction
      * @param $shipping_id
      * @return TransactionStatus
      */
     function shipped(Transaction $transaction,$shipping_id);
 
+    /**
+     * Set the transaction status to received
+     * @param Transaction $transaction
+     * @return TransactionStatus
+     */
     function received(Transaction $transaction);
 
     /**
@@ -92,5 +100,15 @@ interface TransactionService
      */
     function addStatus(Transaction $transaction,$status,$description = null);
 
+    /**
+     * Resubmit data of the transaction. Used when admin reject the transaction and the data need being adjusted
+     * @param Transaction $transaction
+     * @param $payment_url
+     * @param $customer_name
+     * @param $phone
+     * @param $email
+     * @param $address
+     * @return TransactionStatus
+     */
     function resubmitData(Transaction $transaction, $payment_url, $customer_name, $phone, $email, $address);
 }

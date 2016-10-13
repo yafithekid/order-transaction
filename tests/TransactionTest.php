@@ -95,6 +95,10 @@ class TransactionTest extends TestCase
         $this->seed(DatabaseSeeder::class);
     }
 
+    /**
+     * Add product with invalid customer token.
+     * It should create error
+     */
     public function testAddProductCustomerNotFound()
     {
         $this->instantiates();
@@ -105,6 +109,10 @@ class TransactionTest extends TestCase
         ])->seeJson(['status'=>ResponseStatus::ERROR]);
     }
 
+    /**
+     * Add product with valid customer token
+     * It should modify the transaction product data in the database
+     */
     public function testAddProduct()
     {
         $this->instantiates();
@@ -118,9 +126,18 @@ class TransactionTest extends TestCase
         $this->assertEquals(1,$transactionProduct->quantity);
     }
 
+    /**
+     * Modify product added to cart
+     * The last result saved in database must equals the last quantity given.
+     */
     public function testModifyProduct()
     {
         $this->instantiates();
+        $this->json('post','/api/v1/transactions/add_product',[
+            'product_id' => 1,
+            'quantity' => 1,
+            'token' => 'token1'
+        ])->seeJson(['status'=>ResponseStatus::OK]);
         $this->json('post','/api/v1/transactions/add_product',[
             'product_id' => 1,
             'quantity' => 10,
@@ -131,6 +148,11 @@ class TransactionTest extends TestCase
         $this->assertEquals(10,$transactionProduct->quantity);
     }
 
+    /**
+     * Add with not enough product quantity
+     * It should reject with error
+     * But when the quantity is enough, it should not reject
+     */
     public function testNotEnoughProduct()
     {
         $this->instantiates();
@@ -146,6 +168,10 @@ class TransactionTest extends TestCase
         ])->seeJson(['status'=>ResponseStatus::OK]);
     }
 
+    /**
+     * Apply coupon with invalid customer access token
+     * It should reject with error.
+     */
     public function testApplyCouponInvalidToken()
     {
         $this->instantiates();
@@ -155,6 +181,10 @@ class TransactionTest extends TestCase
         $this->assertResponseStatus(403);
     }
 
+    /**
+     * Apply coupon
+     * The transaction data in database should be updated.
+     */
     public function testApplyCoupon()
     {
         $this->instantiates();
@@ -184,7 +214,10 @@ class TransactionTest extends TestCase
         $this->assertEquals(9,$updatedCoupon->quantity);
     }
 
-
+    /**
+     * Modify the coupon in transaction cart with another coupon
+     * Old coupon quantity must be increased and new coupon quantity must be decreased.
+     */
     public function testModifyCoupon()
     {
         $this->instantiates();
@@ -211,6 +244,10 @@ class TransactionTest extends TestCase
         $this->assertEquals(1,Coupon::where('code','=','k2')->where('quantity','=',9)->count());
     }
 
+    /**
+     * Apply coupon with invalid date range (either expired or not active yet)
+     * Ensure the coupon in transaction is not updated.
+     */
     public function testInvalidCouponDate()
     {
         $this->instantiates();
@@ -240,18 +277,27 @@ class TransactionTest extends TestCase
         $this->assertNull($updatedTransaction->coupon_id);
     }
 
+    /**
+     * Check if the price of transaction is deducted when a coupon is applied.
+     */
     public function testPercentageCutCoupon()
     {
         $this->json('get','/api/v1/transactions/8/price',[])
             ->seeJson(['status'=>ResponseStatus::OK,'gross_price'=>10000,'net_price'=>9000]);
     }
 
+    /**
+     * Check if the price of transaction is deducted when a coupon is applied.
+     */
     public function testPaidCutCoupon()
     {
         $this->json('get','/api/v1/transactions/9/price',[])
             ->seeJson(['status'=>ResponseStatus::OK,'gross_price'=>10000,'net_price'=>0]);
     }
 
+    /**
+     * Submit order transaction with invalid token
+     */
     public function testSubmitInvalidToken()
     {
         $this->instantiates();
@@ -259,6 +305,10 @@ class TransactionTest extends TestCase
         ])->seeJson(['status'=>ResponseStatus::ERROR,'code'=>ResponseCode::CUSTOMER_INVALID_TOKEN]);
     }
 
+    /**
+     * Submit order transaction with no additional data (customer name, email, etc.)
+     * Should give the transaction data with default customer data.
+     */
     public function testSubmitNoData()
     {
         $this->instantiates();
@@ -277,6 +327,10 @@ class TransactionTest extends TestCase
         $this->assertEquals($customer->email,$updatedTransaction->email);
     }
 
+    /**
+     * Submit order transaction with additional data (customer name, email, etc.)
+     * Should be saved into database.
+     */
     public function testSubmitWithData(){
         $this->instantiates();
         $transaction = $this->transactionRepo->findCustomerTransactionCart($this->customers[2]);
@@ -294,14 +348,9 @@ class TransactionTest extends TestCase
         $this->assertEquals('01234',$updatedTransaction->phone);
     }
 
-    public function testSendPaymentProofNoToken()
-    {
-        $this->instantiates();
-        $this->json('post','/api/v1/transactions/submit',[
-
-        ])->seeJson(['status'=>ResponseStatus::ERROR,'code'=>ResponseCode::CUSTOMER_INVALID_TOKEN]);
-    }
-
+    /**
+     * Upload the payment proof image and invoke send payment proof service with valid token.
+     */
     public function testSendPaymentProof()
     {
         $this->instantiates();
@@ -320,7 +369,11 @@ class TransactionTest extends TestCase
         $this->assertEquals(TransactionStatus::STATUS_NEED_CHECKING,$transactionStatus->status);
     }
 
-    public function testRejectNoToken()
+    /**
+     * Send payment proof with no valid token
+     * Should reject the operation
+     */
+    public function testSendPaymentProofNoToken()
     {
         $this->instantiates();
         $this->json('post','api/v1/transactions/2/send_payment_proof',[
@@ -328,6 +381,10 @@ class TransactionTest extends TestCase
         ])->seeJson(['status'=>ResponseStatus::ERROR,'code'=>ResponseCode::CUSTOMER_INVALID_TOKEN]);
     }
 
+    /**
+     * Reject customer transaction
+     * Should modify the data in database.
+     */
     public function testReject()
     {
         $this->instantiates();
@@ -343,6 +400,10 @@ class TransactionTest extends TestCase
         $this->assertEquals($description,$transactionStatus->description);
     }
 
+    /**
+     * Resubmit data of a transaction
+     * New data should be saved
+     */
     public function testResubmitData()
     {
         $this->instantiates();
@@ -358,6 +419,9 @@ class TransactionTest extends TestCase
         $this->assertEquals(TransactionStatus::STATUS_NEED_CHECKING,$transactionStatus->status);
     }
 
+    /**
+     * Invoke 'prepared for shipment' with invalid admin token
+     */
     public function testPrepareForShipmentInvalidToken()
     {
         $this->json('post','api/v1/transactions/3/prepare_shipment',[
@@ -365,6 +429,9 @@ class TransactionTest extends TestCase
         $this->assertResponseStatus(403);
     }
 
+    /**
+     * Invoke 'prepared for shipment' with valid admin token
+     */
     public function testPrepareForShipment()
     {
         $this->instantiates();
@@ -377,6 +444,9 @@ class TransactionTest extends TestCase
         $this->assertEquals(TransactionStatus::STATUS_PREPARED_FOR_SHIPMENT,$transactionStatus->status);
     }
 
+    /**
+     * Invoke 'shipped' operation with invalid token
+     */
     public function testShippedInvalidToken()
     {
         $this->instantiates();
@@ -385,6 +455,9 @@ class TransactionTest extends TestCase
         ])->seeJson(['status'=>ResponseStatus::ERROR,'code'=>ResponseCode::ADMIN_INVALID_TOKEN]);
     }
 
+    /**
+     * Invoke 'shipped' operation with valid token
+     */
     public function testShipped()
     {
         $this->instantiates();
@@ -402,6 +475,9 @@ class TransactionTest extends TestCase
         ])->seeJson(['status'=>ResponseStatus::OK]);
     }
 
+    /**
+     * Invoke 'received' operation with no valid admin token
+     */
     public function testReceivedInvalidToken()
     {
         $this->instantiates();
@@ -409,6 +485,9 @@ class TransactionTest extends TestCase
         ])->seeJson(['status'=>ResponseStatus::ERROR,'code'=>ResponseCode::ADMIN_INVALID_TOKEN]);
     }
 
+    /**
+     * Set transaction as 'received'
+     */
     public function testReceived()
     {
         $this->instantiates();

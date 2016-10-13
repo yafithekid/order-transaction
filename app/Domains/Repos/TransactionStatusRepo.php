@@ -20,10 +20,13 @@ interface TransactionStatusRepo
      */
     function findByTransactionMostRecent(Transaction $transaction);
 
+    /**
+     * @param TransactionStatus $transactionStatus
+     */
     function save(TransactionStatus $transactionStatus);
 
     /**
-     * @param $transaction
+     * @param Transaction $transaction
      * @return TransactionStatus[]
      */
     function findAllByTransactionOrderByMostRecent(Transaction $transaction);

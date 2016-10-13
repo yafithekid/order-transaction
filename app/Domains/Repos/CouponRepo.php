@@ -5,6 +5,10 @@ namespace App\Domains\Repos;
 
 use App\Models\Coupon;
 
+/**
+ * Interface CouponRepo
+ * @package App\Domains\Repos
+ */
 interface CouponRepo
 {
     /**
@@ -13,5 +17,8 @@ interface CouponRepo
      */
     public function findByCode($code);
 
+    /**
+     * @param Coupon $coupon
+     */
     public function save(Coupon $coupon);
 }
