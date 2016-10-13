@@ -30,6 +30,10 @@ API Documentation can be found [here](https://github.com/yafithekid/order-transa
 
 To run the unit tests, simply run `phpunit` at root project folder.
 
+Result:
+
+![Unit Test](https://raw.githubusercontent.com/yafithekid/order-transaction/master/public/unit-test.png)
+
 Unit test can be found [here](https://github.com/yafithekid/order-transaction/tree/master/tests)
 
 ## License
