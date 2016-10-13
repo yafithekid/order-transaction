@@ -23,6 +23,7 @@ class CustomerSeeder extends Seeder
             $customer->email = "pelanggan{$i}@gmail.com";
             $customer->address = "Jalan Mawar {$i}";
             $customer->token = "token{$i}";
+            $customer->phone = "123";
             $customer->save();
         }
     }

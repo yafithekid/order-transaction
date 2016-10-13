@@ -64,11 +64,15 @@ class TransactionController extends Controller
 
     public function postSubmit(Request $request){
         $customer = $this->customerRepo->findByToken($request->input('token'));
+        $address = $request->input('address',$customer->address);
+        $email = $request->input('email',$customer->email);
+        $customer_name = $request->input('customer_name',$customer->name);
+        $phone = $request->input('phone',$customer->phone);
         if ($customer == null){
             return JSONResponseFactory::customerNotFound();
         }
         $transaction = $this->transactionService->findOrCreateTranscationCart($customer);
-        $this->transactionService->submit($transaction);
+        $this->transactionService->submit($transaction,$customer_name,$phone,$email,$address);
         return JSONResponseFactory::ok();
     }
 
@@ -183,6 +187,8 @@ class TransactionController extends Controller
             $net_price = (1.0 - $coupon->percentage_cut) * $gross_price;
         } elseif ($coupon->paid_cut > 0){
             $net_price = max(0,$gross_price - $coupon->paid_cut);
+        } else {
+            $net_price = 0;
         }
         return response()->json([
             'status' => ResponseStatus::OK,

@@ -44,9 +44,13 @@ interface TransactionService
     /**
      * Submit the transaction and change the transaction status
      * @param Transaction $transaction
+     * @param $customer_name
+     * @param $phone
+     * @param $email
+     * @param $address
      * @return TransactionStatus
      */
-    function submit(Transaction $transaction);
+    function submit(Transaction $transaction, $customer_name, $phone, $email, $address);
 
     /**
      * Give the payment proof and set the transaction status to 'need checking'

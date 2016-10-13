@@ -242,7 +242,7 @@ class TransactionTest extends TestCase
             ->seeJson(['status'=>ResponseStatus::OK,'gross_price'=>10000,'net_price'=>0]);
     }
 
-    public function testSubmit()
+    public function testSubmitNoData()
     {
         $this->instantiates();
         $transaction = $this->transactionRepo->findCustomerTransactionCart($this->customers[1]);
@@ -250,9 +250,31 @@ class TransactionTest extends TestCase
         $this->json('post','api/v1/transactions/submit',[
             'token' => 'token1'
         ])->seeJson(['status'=>ResponseStatus::OK]);
-
+        $updatedTransaction = $this->transactionRepo->findById($transaction->id);
+        $customer = $this->customers[1];
         $transactionStatus = $this->transactionStatusRepo->findByTransactionMostRecent($transaction);
         $this->assertEquals(TransactionStatus::STATUS_NEED_PAYMENT_PROOF,$transactionStatus->status);
+        $this->assertEquals($customer->name,$updatedTransaction->customer_name);
+        $this->assertEquals($customer->address,$updatedTransaction->address);
+        $this->assertEquals($customer->phone,$updatedTransaction->phone);
+        $this->assertEquals($customer->email,$updatedTransaction->email);
+    }
+
+    public function testSubmitWithData(){
+        $this->instantiates();
+        $transaction = $this->transactionRepo->findCustomerTransactionCart($this->customers[2]);
+        $this->json('post','/api/v1/transactions/submit',[
+            'token' => 'token2',
+            'address' => 'a',
+            'customer_name' => 'a',
+            'email' => 'a@a.com',
+            'phone' => '01234'
+        ])->seeJson(['status'=>ResponseStatus::OK]);
+        $updatedTransaction = $this->transactionRepo->findById($transaction->id);
+        $this->assertEquals('a',$updatedTransaction->customer_name);
+        $this->assertEquals('a',$updatedTransaction->address);
+        $this->assertEquals('a@a.com',$updatedTransaction->email);
+        $this->assertEquals('01234',$updatedTransaction->phone);
     }
 
     public function testSendPaymentProof()

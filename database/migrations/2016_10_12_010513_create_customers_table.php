@@ -19,6 +19,7 @@ class CreateCustomersTable extends Migration
             $t->string('email');
             $t->string('address');
             $t->string('token');
+            $t->string('phone');
         });
     }
 

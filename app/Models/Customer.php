@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property string email
  * @property string address
  * @property string token
+ * @property string phone
  */
 class Customer extends Model
 {

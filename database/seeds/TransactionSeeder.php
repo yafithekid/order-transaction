@@ -36,12 +36,13 @@ class TransactionSeeder extends Seeder
             DB::statement("SELECT setval('transactions_id_seq',1,FALSE)");
         }
         $firstCustomer = $this->customerRepo->findById(1);
+        $secondCustomer = $this->customerRepo->findById(2);
         //1. ongoing transaction cart
         $transaction = $this->mockTransactionWithProducts($firstCustomer);
         $this->transactionService->addStatus($transaction,TransactionStatus::STATUS_UNSUBMITTED);
         //2. submitted transaction
         $transaction = $this->mockTransactionWithProducts($firstCustomer);
-        $this->transactionService->submit($transaction);
+        $this->transactionService->submit($transaction,"a","1","a@a.com","a");
         //3. paid transaction
         $transaction = $this->mockTransactionWithProducts($firstCustomer);
         $this->transactionService->sendPaymentProof($transaction,"http://lorempixel.com/125/125");
@@ -57,14 +58,18 @@ class TransactionSeeder extends Seeder
         //7. received transaction
         $transaction = $this->mockTransactionWithProducts($firstCustomer);
         $this->transactionService->received($transaction);
+        //8. cart with coupon
         $transaction = $this->mockTransactionWithProducts($firstCustomer);
         $transaction->coupon_id = 1;
         $this->transactionRepo->save($transaction);
-        $this->transactionService->submit($transaction);
+        $this->transactionService->submit($transaction,"a","1","a@a.com","a");
+        //9. cart with coupon
         $transaction = $this->mockTransactionWithProducts($firstCustomer);
         $transaction->coupon_id = 2;
         $this->transactionRepo->save($transaction);
-        $this->transactionService->submit($transaction);
+        $this->transactionService->submit($transaction,"a","1","a@a.com","a");
+        //10. customer 2 cart. will be used for unit test
+        $transaction = $this->mockTransactionWithProducts($secondCustomer);
     }
 
     private function mockTransactionWithProducts(Customer $customer){

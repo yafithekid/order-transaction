@@ -77,10 +77,18 @@ class TransactionServiceImpl implements TransactionService
 
     /**
      * @param Transaction $transaction
+     * @param $customer_name
+     * @param $phone
+     * @param $email
+     * @param $address
      * @return TransactionStatus
      */
-    function submit(Transaction $transaction)
+    function submit(Transaction $transaction, $customer_name, $phone, $email, $address)
     {
+        $transaction->customer_name = $customer_name;
+        $transaction->phone = $phone;
+        $transaction->email = $email;
+        $transaction->address = $address;
         $this->transactionRepo->save($transaction);
         return $this->addStatus($transaction,TransactionStatus::STATUS_NEED_PAYMENT_PROOF);
     }

@@ -11,6 +11,10 @@ use Illuminate\Database\Eloquent\Model;
  * @property boolean submitted
  * @property integer coupon_id
  * @property Coupon coupon
+ * @property string phone
+ * @property string customer_name
+ * @property string email
+ * @property string address
  */
 class Transaction extends Model
 {
